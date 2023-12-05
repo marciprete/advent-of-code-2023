@@ -27,7 +27,7 @@ fun main() {
         val mappedListOfWinningCards = getMappedListOfWinningNumbersByCard(input)
         val winningCardOriginalSizes = mutableListOf<Int>()
         val copies = mutableListOf<Int>()
-        mappedListOfWinningCards.forEach{ k, v ->
+        mappedListOfWinningCards.forEach{ (k, v) ->
             winningCardOriginalSizes.add(k, v.size)
             if (v.isEmpty()) {
                 copies.add(0)
