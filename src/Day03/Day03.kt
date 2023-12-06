@@ -1,6 +1,7 @@
-import kotlin.math.min
-
 fun main() {
+
+    val pattern = "[^a-zA-Z0-9.]".toRegex()
+
     fun addEdges(numbers: List<Int>): List<Int> {
         var clone = numbers.toMutableList()
         clone.add(numbers.min() - 1)
@@ -11,7 +12,7 @@ fun main() {
     fun mapLinesToNumbersWithPositionByIndex(input: List<String>) = input.mapIndexed { idx, originalLine ->
         val line = "$originalLine.";
         val numbers = mutableListOf<Triple<Int, Int, List<Int>>>()
-        var number: String = ""
+        var number = ""
         var indexes = mutableListOf<Int>()
         line.forEachIndexed { i, char ->
             if (char.isDigit()) {
@@ -28,26 +29,28 @@ fun main() {
         idx to numbers
     }.toMap()
 
+    fun getSymbolPositionMap(input: List<String>) = input.mapIndexed { i, line ->
+        val indexes = mutableListOf<Pair<Char, Int>>()
+        line.forEachIndexed { idx, char ->
+            if (pattern.matches(char.toString())) {
+                indexes.add(Pair(char, idx))
+            }
+        }
+        val swap = indexes.toList()
+        indexes.clear()
+        i to swap
+    }.toMap()
+
     fun part1(input: List<String>): Int {
         val mappedNumbers = mapLinesToNumbersWithPositionByIndex(input)
-        val pattern = "[^a-zA-Z0-9.]".toRegex()
-        val cosa = input.mapIndexed { i, line ->
-            val indici = mutableListOf<Int>()
-            line.forEachIndexed { idx, char ->
-                if (pattern.matches(char.toString())) {
-                    indici.add(idx)
-                }
-            }
-            val retto = indici.toList()
-            indici.clear()
-            i to retto
-        }.toMap()
+        val symbolPositions = getSymbolPositionMap(input)
+
         val elems = mutableSetOf<Triple<Int, Int, List<Int>>>()
 
         for (i in 1..<mappedNumbers.size) {
             val positions = mutableSetOf<Int>()
-            cosa[i - 1]?.let { positions.addAll(it) }
-            cosa[i]?.let { positions.addAll(it) }
+            symbolPositions[i - 1]?.map { it.second }?.let { positions.addAll(it) }
+            symbolPositions[i]?.map { it.second }?.let { positions.addAll(it) }
 
             val toSearch = mutableSetOf<Triple<Int, Int, List<Int>>>()
             mappedNumbers[i - 1]?.let { toSearch.addAll(it) }
@@ -67,12 +70,59 @@ fun main() {
     }
 
     fun part2(input: List<String>): Int {
+        val mappedNumbers = mapLinesToNumbersWithPositionByIndex(input)
+        val symbolPositions = getSymbolPositionMap(input)
+        val gears = symbolPositions.map { (k, v) ->
+            k to v.filter { it.first.equals('*') }
+        }.toMap()
+        val map = mutableMapOf<Triple<Int, Char, Int>, MutableList<Int>>()
+        for (i in 1..<mappedNumbers.size) {
+            val toSearch = mutableSetOf<Triple<Int, Int, List<Int>>>()
+            mappedNumbers[i - 1]?.let { toSearch.addAll(it) }
+            mappedNumbers[i]?.let { toSearch.addAll(it) }
+
+            val firstTwoGearRows = mutableListOf<Triple<Int, Char, Int>>()
+            gears[i - 1]?.let {
+                it.forEach { pair ->
+                    firstTwoGearRows.add(Triple(i-1, pair.first, pair.second))
+                }
+            }
+            gears[i]?.let {
+                it.forEach { pair ->
+                    firstTwoGearRows.add(Triple(i, pair.first, pair.second))
+                }
+            }
+
+            println("Iteration $i")
+
+            toSearch.forEach { triple ->
+                println("Searching for $triple in $firstTwoGearRows")
+                firstTwoGearRows?.forEach { gear ->
+                    if (triple.third.contains(gear.third)) {
+                        mappedNumbers[i]?.remove(triple)
+                        mappedNumbers[i - 1]?.remove(triple)
+//                        println(gear)
+//                        println(triple)
+                        if (map[gear] == null) {
+                            map[gear] = mutableListOf<Int>()
+                        }
+                        map.get(gear)?.add(triple.first)
+                    }
+                    val filtro = map.filter { (k,v)->v.size==2 }
+                    val sup = filtro.map { (k,v) ->
+                        v[0]*v[1]
+                    }
+                    println (sup.sum())
+                }
+            }
+        }
         return input.size
     }
 
     // test if implementation meets criteria from the description, like:
     val testInput = readInput("Day03_test")
     check(part1(testInput) == 4361)
+//    check(part2(testInput) == 4361)
 
     val input = readInput("Day03")
     part1(input).println()
