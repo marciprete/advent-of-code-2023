@@ -93,26 +93,19 @@ fun main() {
                 }
             }
 
-            println("Iteration $i")
-
             toSearch.forEach { triple ->
-                println("Searching for $triple in $firstTwoGearRows")
                 firstTwoGearRows?.forEach { gear ->
                     if (triple.third.contains(gear.third)) {
                         mappedNumbers[i]?.remove(triple)
                         mappedNumbers[i - 1]?.remove(triple)
-//                        println(gear)
-//                        println(triple)
                         if (map[gear] == null) {
-                            map[gear] = mutableListOf<Int>()
+                            map[gear] = mutableListOf()
                         }
                         map.get(gear)?.add(triple.first)
                     }
-                    val filtro = map.filter { (k,v)->v.size==2 }
-                    val sup = filtro.map { (k,v) ->
+                    map.filter { (k,v)->v.size==2 }.map { (k,v) ->
                         v[0]*v[1]
                     }
-                    println (sup.sum())
                 }
             }
         }
@@ -122,10 +115,8 @@ fun main() {
     // test if implementation meets criteria from the description, like:
     val testInput = readInput("Day03_test")
     check(part1(testInput) == 4361)
-//    check(part2(testInput) == 4361)
 
     val input = readInput("Day03")
     part1(input).println()
-    println("più di 542793")
     part2(input).println()
 }
