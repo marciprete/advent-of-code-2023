@@ -1,5 +1,3 @@
-import java.lang.Exception
-
 fun main() {
     fun go(pair: Pair<String, String>, dir: Char): String {
         return when (dir) {
@@ -50,27 +48,29 @@ fun main() {
     }
 
 
-    fun part2(input: List<String>): Int {
+    fun part2(input: List<String>): Long {
         val (directions, steps) = instructions(input)
         var stepList = steps.filter { it.key.endsWith('A') }.map { it.key }
-        var counter = 0
-        while ((!stepList.all { it.endsWith("Z") })) {
-            val direction = directions[counter % directions.length]
-            val sio = steps.filter { it.key in stepList }
-            val nextSteps = sio.map { go(it.value, direction) }
-//            val nextSteps = go(sio.values.toList(), direction)
-//            println(nextSteps)
-            stepList = nextSteps
-            counter++
-            if (counter%1000000 == 0) {
-                println(counter)
-            }
+        val minSteps = stepList.map {
+            var counter = 0
+            var step = it
+            do {
+                val direction = directions[counter % directions.length]
+                val next = go(steps[step]!!, direction)
+                if (next == step) {
+                    throw Exception("LOOP")
+                } else {
+                    step = next
+                    counter++
+                }
+            } while (!step.endsWith("Z"))
+             counter
         }
-        //38098800
-        //1000000
-        println(counter)
+        println(minSteps)
+        var lcm = minSteps[0].toLong()
+        minSteps.drop(1).forEach { lcm = lcm(lcm, it.toLong()) }
 
-        return counter
+        return lcm
     }
 
     val testInput = readInput("Day08_test")
@@ -78,7 +78,7 @@ fun main() {
     val testInput1_2 = readInput("Day08_test_2")
     check(part1(testInput1_2) == 6)
     val testInput2 = readInput("Day08_2_test")
-    check(part2(testInput2) == 6)
+    check(part2(testInput2) == 6L)
 
     val input = readInput("Day08")
     part1(input).println()
