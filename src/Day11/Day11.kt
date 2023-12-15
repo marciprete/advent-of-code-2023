@@ -72,7 +72,7 @@ fun main() {
     }
 
     fun part2(input: List<String> , amount: Long = 99): Long {
-        val universe = input.map { it.toMutableList() }.let { Universe(it.toMutableList()) }
+        val universe = Universe(input.map { it.toMutableList() }.toMutableList())
         val galaxies = expandAndGetGalaxies(universe, amount)
         val map = getPermutationsMap(galaxies)
         val mins = mutableListOf<Long>()
